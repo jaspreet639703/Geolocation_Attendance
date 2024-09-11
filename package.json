@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "npm install"
-  },
+    "start": "node netlify/functions/server.js",
+    "build": "echo 'No build necessary'"
+  }
   "dependencies": {
     "express": "^4.17.1",
     "body-parser": "^1.19.0",
