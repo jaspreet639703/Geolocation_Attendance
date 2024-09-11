@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geolocation Attendance</title>
+  <style>
+    #coordinates {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+  <script>
+    async function checkIn() {
+      const name = document.getElementById('name').value;
+
+      if (!name) {
+        alert('Please enter your name.');
+        return;
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          // Display the detected coordinates
+          const coordinatesElement = document.getElementById('coordinates');
+          coordinatesElement.innerText = 
+            `Detected coordinates: Latitude: ${latitude}, Longitude: ${longitude}`;
+
+          // Send the coordinates to the server for distance calculation
+          const response = await fetch('/check-in', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, latitude, longitude })
+          });
+
+          const result = await response.json();
+
+          // First alert: Show the distance between the user's location and the classroom
+          alert(`The distance from your location to the classroom is ${result.distance} meters.`);
+
+          // Second alert: Show whether the user is within range or not
+          alert(result.message);
+        }, (error) => {
+          console.error('Error obtaining geolocation:', error);
+          alert('Error obtaining geolocation. Please ensure GPS is enabled.');
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function downloadCSV() {
+      window.location.href = '/generate-csv';
+    }
+  </script>
+</head>
+<body>
+  <h1>Geolocation Attendance</h1>
+  <input type="text" id="name" placeholder="Enter your name" />
+  <button onclick="checkIn()">Check In</button>
+  <div id="coordinates">Detected coordinates will appear here.</div>
+  <button onclick="downloadCSV()">Download CSV</button>
+</body>
+</html>
