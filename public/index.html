@@ -28,8 +28,8 @@
           coordinatesElement.innerText = 
             `Detected coordinates: Latitude: ${latitude}, Longitude: ${longitude}`;
 
-          // Send the coordinates to the server for distance calculation
-          const response = await fetch('/check-in', {
+          // Send the coordinates and name to the server for distance calculation
+          const response = await fetch('/.netlify/functions/server/check-in', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -52,17 +52,14 @@
         alert("Geolocation is not supported by this browser.");
       }
     }
-
-    function downloadCSV() {
-      window.location.href = '/generate-csv';
-    }
   </script>
 </head>
 <body>
   <h1>Geolocation Attendance</h1>
-  <input type="text" id="name" placeholder="Enter your name" />
+  <input type="text" id="name" placeholder="Enter your name">
   <button onclick="checkIn()">Check In</button>
   <div id="coordinates">Detected coordinates will appear here.</div>
-  <button onclick="downloadCSV()">Download CSV</button>
+  <br>
+  <a href="/.netlify/functions/server/generate-csv" target="_blank">Download CSV</a>
 </body>
 </html>
