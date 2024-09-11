@@ -1,4 +1,5 @@
 const express = require('express');
+const serverless = require('serverless-http');
 const bodyParser = require('body-parser');
 const path = require('path');
 const geolib = require('geolib');
@@ -6,20 +7,19 @@ const fs = require('fs');
 const { parse } = require('json2csv');
 
 const app = express();
-const port = 3000;
-
+const router = express.Router();
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 const classroomLocation = {
-  latitude: 26.8793199,  // Actual classroom latitude
-  longitude: 81.0644155, // Actual classroom longitude
+  latitude: 26.8918744, // Actual classroom latitude
+  longitude: 81.0733618 // Actual classroom longitude
 };
 
 const checkInRadius = 20; // 20 meters radius for attendance check-in
 const checkIns = [];
 
-app.post('/check-in', (req, res) => {
+router.post('/check-in', (req, res) => {
   const { name, latitude, longitude } = req.body;
 
   console.log(`Received coordinates: Latitude: ${latitude}, Longitude: ${longitude}, Name: ${name}`);
@@ -46,7 +46,7 @@ app.post('/check-in', (req, res) => {
   return res.send({ attendance, message, distance });
 });
 
-app.get('/generate-csv', (req, res) => {
+router.get('/generate-csv', (req, res) => {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
   const recentCheckIns = checkIns.filter(checkIn => new Date(checkIn.timestamp) > oneHourAgo);
 
@@ -55,7 +55,7 @@ app.get('/generate-csv', (req, res) => {
 
   try {
     const csv = parse(recentCheckIns, opts);
-    const filePath = path.join(__dirname, 'public', 'checkins.csv');
+    const filePath = path.join(__dirname, '../public', 'checkins.csv');
     fs.writeFileSync(filePath, csv);
     res.download(filePath);
   } catch (err) {
@@ -64,6 +64,7 @@ app.get('/generate-csv', (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+app.use('/.netlify/functions/server', router);
+
+module.exports = app;
+module.exports.handler = serverless(app);
